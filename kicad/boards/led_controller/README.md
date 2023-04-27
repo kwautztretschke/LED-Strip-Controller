@@ -1,8 +1,16 @@
 # MOSFETs
 
-6A N-Channel depletion type
-IXTH6N50D2 
+We have previously used:
 
+* IXTH6N50D2 6A N-Channel depletion type
+
+
+Competitor (Hardware store brand) controllers use among others:
+* 09N03 25V N-Channel Enhancement Mode MOSFET
+ID = 50A
+
+* A2SHB N-Channel Enhancement mode MOSFET
+ID = 2,1A
 # Wiring
 
 The fourth transistor is connected to GPIO2, which is high at boot.
