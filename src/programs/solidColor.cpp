@@ -8,8 +8,8 @@ public:
 		return 0;
 	}
 	void render(long ms){
-		for (int i=0;i<3;i++){
-			m_FB[i] = ProgramManager::getColor()[i];
+		for (int i=0;i<NUM_LEDS;i++){
+			m_FB[i] = ProgramManager::getColor();
 		}
 	}
 } solidColor;

@@ -2,29 +2,55 @@
 
 namespace Hardware{
 
+#define NUM_LEDS 133
+#define SEG_R_INDEX 0
+#define SEG_R_LENGTH 51
+#define SEG_M_INDEX 60
+#define SEG_M_LENGTH 17
+#define SEG_L_INDEX 86
+#define SEG_L_LENGTH 47
+// Sum of segment lengths: 51+17+47 = 115
+
+static CRGB s_Leds[NUM_LEDS] = {0};
+
 int init(){
-	pinMode(LEDR, OUTPUT);
-	pinMode(LEDG, OUTPUT);
-	pinMode(LEDB, OUTPUT);
-	digitalWrite(LEDR, LOW);
-	digitalWrite(LEDG, LOW);
-	digitalWrite(LEDB, LOW);
+	FastLED.addLeds<WS2812B, DATA_PIN, GRB>(s_Leds, NUM_LEDS);
 	return 0;
 }
 
-void display(uint8_t* fb, uint8_t brightness){
-	int r = (fb[0] * brightness) / 255;
-	int g = (fb[1] * brightness) / 255;
-	int b = (fb[2] * brightness) / 255;
-	analogWrite(LEDR, r);
-	analogWrite(LEDG, g);
-	analogWrite(LEDB, b);
+void display(CRGB* fb, uint8_t brightness){
+	// three loops, each a segment, from right to left
+	// right segment
+	for(int i=0;i<SEG_R_LENGTH;i++){
+		int phys = SEG_R_INDEX + i;
+		int virt = i;
+		s_Leds[phys] = fb[virt];
+		s_Leds[phys].nscale8(brightness);
+	}
+	// middle segment
+	for(int i=0;i<SEG_M_LENGTH;i++){
+		int phys = SEG_M_INDEX + i;
+		int virt = SEG_R_LENGTH + i;
+		s_Leds[phys] = fb[virt];
+		s_Leds[phys].nscale8(brightness);
+	}
+	// left segment
+	for(int i=0;i<SEG_L_LENGTH;i++){
+		int phys = SEG_L_INDEX + i;
+		int virt = SEG_R_LENGTH + SEG_M_LENGTH + i;
+		s_Leds[phys] = fb[virt];
+		s_Leds[phys].nscale8(brightness);
+	}
+
+	FastLED.show();
 }
 
 void turnOff(){
-	digitalWrite(LEDR, LOW);
-	digitalWrite(LEDG, LOW);
-	digitalWrite(LEDB, LOW);
+	for(int i=0;i<NUM_LEDS;i++){
+		s_Leds[i] = CRGB::Black;
+	}
+	//TODO show once, don't torture the data pin all the time
+	FastLED.show();
 }
 
 }
