@@ -8,7 +8,7 @@ public:
 		return 0;
 	}
 	void render(long ms){
-		for (int i=0;i<NUM_LEDS;i++){
+		for (int i=0;i<FB_SIZE;i++){
 			m_FB[i] = ProgramManager::getColor();
 		}
 	}

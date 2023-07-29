@@ -28,7 +28,7 @@ public:
 	void render(long ms){
 		CRGB c = ProgramManager::getColor();
 		c.nscale8(m_Brightness);
-		for (int i=0;i<NUM_LEDS;i++){
+		for (int i=0;i<FB_SIZE;i++){
 			m_FB[i] = c;
 		}
 	}
