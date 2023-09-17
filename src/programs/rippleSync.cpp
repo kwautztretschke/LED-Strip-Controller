@@ -61,17 +61,15 @@ public:
 		m_FB[0] = c;
 	}
 	void rippleOUT(CRGB c){
-		// ripple right segment to the right
-		for(int i=0; i<SEG_R_LENGTH+1; i++){
+		// ripple left half to the left, and mirror that to the right
+		for(int i=0; i<(FB_SIZE/2)-1; i++){
 			m_FB[i] = m_FB[i+1];
+			m_FB[FB_SIZE-i-1] = m_FB[FB_SIZE-i-2];
 		}
-		// ripple left segment to the left
-		for(int i=FB_SIZE-1; i>(SEG_R_LENGTH+SEG_M_LENGTH-1);i--){
-			m_FB[i] = m_FB[i-1];
-		}
-		// update center
-		for(int i=0;i<SEG_M_LENGTH;i++){
-			m_FB[SEG_R_LENGTH+i] = c;
+		// sync center LEDs
+		// TODO make center size configurable
+		for(int i=(FB_SIZE/2)-1; i<=FB_SIZE-(FB_SIZE/2); i++){
+			m_FB[i] = c;
 		}
 	}
 	void rippleIN(CRGB c){
