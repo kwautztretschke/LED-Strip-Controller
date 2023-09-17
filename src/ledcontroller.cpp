@@ -30,8 +30,9 @@ void setup(){
 	ArduinoOTA.setPassword("swag");
 	ArduinoOTA.begin();
 
-	ProgramManager::init();
 	ProgramManager::initPrograms();
+	ProgramManager::init();
+
 	Hardware::init();
 
 	Fartnet.setDmxCallback(ProgramManager::artnet);
@@ -39,7 +40,7 @@ void setup(){
 
 	MqttClient.setPowerCallback(power);
 	MqttClient.setBrightnessCallback(brightness);
-	MqttClient.setColorCallback(ProgramManager::setColor);
+	MqttClient.setColorCallback([](uint8_t *c){ProgramManager::setColor(CRGB(c[0], c[1], c[2]));});
 	MqttClient.setInputCallback(ProgramManager::input);
 	MqttClient.setFocusCallback(ProgramManager::focus);
 	MqttClient.setRebootCallback(0);
