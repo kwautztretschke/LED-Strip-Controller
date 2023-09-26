@@ -7,6 +7,7 @@
 static class : public Program{
 public:
 	int m_Channel = 0;
+	int m_ColorIndex = 0;
 	int m_Brightness = 255;
 	enum Mode{
 		R2L,
@@ -33,6 +34,8 @@ public:
 				m_Mode = IN;
 			else
 				return 1;
+		}else if(!strcmp(key, "colorindex")){
+			m_ColorIndex = strtol(value, NULL, 10);
 		}else{
 			// wrong input
 			return 1;
@@ -87,7 +90,7 @@ public:
 	}
 	
 	void render(long ms){
-		CRGB c = ProgramManager::getColor();
+		CRGB c = ProgramManager::getColor(m_ColorIndex);
 		c.nscale8(m_Brightness);
 		switch(m_Mode){
 			case R2L:
