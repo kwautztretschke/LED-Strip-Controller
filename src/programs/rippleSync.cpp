@@ -5,25 +5,29 @@
 #include "Hardware.h"
 
 static class : public Program{
-public:
-	int m_Channel = 0;
-	int m_ColorIndex = 0;
-	int m_Brightness = 255;
+private:
+	uint8_t m_ArtNetHistory[32] = {0};
+	ArtnetHelper m_ArtnetHelper = ArtnetHelper(m_ArtNetHistory, 32);
 	enum Mode{
 		R2L,
 		L2R,
 		OUT,
 		IN
 	} m_Mode = R2L;
+	int m_Interval = 1; //only ripple every n frames
+	int m_FrameCounter = 0;
+public:
 	using Program::Program;
 	int init(){
 		m_Name = "rippleSync";
 		return 0;
 	}
 	int input(char* key, char* value){
-		if(!strcmp(key, "channel")){
-			m_Channel = strtol(value, NULL, 10);
-		}else if(!strcmp(key, "mode")){
+		if (!Program::input(key, value))
+			return 0; //input was handled by program (e.g. colorindex)
+		if (!m_ArtnetHelper.input(key, value))
+			return 0; //input was handled by artnethelper
+		if(!strcmp(key, "mode")){
 			if(!strcmp(value, "R2L"))
 				m_Mode = R2L;
 			else if(!strcmp(value, "L2R"))
@@ -33,19 +37,16 @@ public:
 			else if(!strcmp(value, "IN"))
 				m_Mode = IN;
 			else
-				return 1;
-		}else if(!strcmp(key, "colorindex")){
-			m_ColorIndex = strtol(value, NULL, 10);
-		}else{
-			// wrong input
-			return 1;
+				return 1; //wrong mode
+			return 0;
+		}else if(!strcmp(key, "interval")){
+			m_Interval = strtol(value, NULL, 10);
+			return 0;
 		}
-		return 0;
+		return 1; //no matching input found
 	}
 	void artnet(const uint8_t* data, const uint16_t size){
-		if(m_Channel >= size)
-			return;
-		m_Brightness = data[m_Channel];
+		m_ArtnetHelper.artnet(data, size);
 	}
 	void rippleL2R(CRGB c){
 		for(int i=0; i<(FB_SIZE-1); i++){
@@ -90,8 +91,12 @@ public:
 	}
 	
 	void render(long ms){
-		CRGB c = ProgramManager::getColor(m_ColorIndex);
-		c.nscale8(m_Brightness);
+		if(++m_FrameCounter < m_Interval)
+			return;
+		m_FrameCounter = 0;
+
+		CRGB c = getColor();
+		c.nscale8(m_ArtnetHelper.getModulator());
 		switch(m_Mode){
 			case R2L:
 				rippleR2L(c);
@@ -107,4 +112,4 @@ public:
 				break;
 		}
 	}
-} rippleSync(true);
+} rippleSync;
