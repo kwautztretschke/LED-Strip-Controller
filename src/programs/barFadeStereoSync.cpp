@@ -10,10 +10,6 @@ private:
 	ArtnetHelper m_ArtnetHelper_R = ArtnetHelper(m_History_R, 32, "R");
 	uint8_t m_History_L[32] = {0};
 	ArtnetHelper m_ArtnetHelper_L = ArtnetHelper(m_History_L, 32, "L");
-	enum Mode{
-		OUT,
-		IN
-	} m_Mode = IN;
 	uint8_t m_Fade = 230;
 	int m_FrameCounter = 0;
 	int m_Interval = 20; // only dim once every n frames //TODO hacky!
@@ -28,15 +24,7 @@ public:
 			return 0; //input was handled by program (e.g. colorindex)
 		if (!m_ArtnetHelper_R.input(key, value) || !m_ArtnetHelper_L.input(key, value))
 			return 0; //input was handled by artnethelpers
-		if(!strcmp(key, "mode")){
-			if(!strcmp(value, "OUT"))
-				m_Mode = OUT;
-			else if(!strcmp(value, "IN"))
-				m_Mode = IN;
-			else
-				return 1; //wrong mode
-			return 0;
-		}else if(!strcmp(key, "fade")){
+		if(!strcmp(key, "fade")){
 			m_Fade = strtol(value, NULL, 10);
 			return 0;
 		}
@@ -46,23 +34,6 @@ public:
 		m_ArtnetHelper_L.artnet(data, size);
 		m_ArtnetHelper_R.artnet(data, size);
 	}
-	void barOUT(CRGB cl, CRGB cr, int dl, int dr){
-		for(int i=0; i<dl; i++){
-			m_FB[FB_SIZE/2 -i] = cl;
-		}
-		for(int i=0; i<dr; i++){
-			m_FB[FB_SIZE/2 + i+1] = cr;
-		}
-	}
-	void barIN(CRGB cl, CRGB cr, int dl, int dr){
-		for(int i=0; i<dl; i++){
-			m_FB[i] = cl;
-		}
-		for(int i=0; i<dr; i++){
-			m_FB[FB_SIZE-1 - i] = cr;
-		}
-	}
-	
 	void render(long ms){
 		CRGB cl = getColor();
 		CRGB cr = getColorRelative(1);
@@ -74,11 +45,11 @@ public:
 				m_FB[i].nscale8(m_Fade); //slowly dim all LEDs
 			}
 		}
-		//first speaker
+		//left speaker
 		for(int i=0; i<dl; i++){
 			m_FB[i] = m_FB[FB_SIZE/2-i-1] = cl;
 		}
-		//first speaker
+		//right speaker
 		for(int i=0; i<dr; i++){
 			m_FB[i + FB_SIZE/2] = m_FB[FB_SIZE-i-1] = cr;
 		}
