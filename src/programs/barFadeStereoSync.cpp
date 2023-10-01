@@ -66,21 +66,22 @@ public:
 	void render(long ms){
 		CRGB cl = getColor();
 		CRGB cr = getColorRelative(1);
-		int dl = (FB_SIZE * m_ArtnetHelper_L.getModulator()) / 512;
-		int dr = (FB_SIZE * m_ArtnetHelper_R.getModulator()) / 512;
+		int dl = (FB_SIZE/2 * m_ArtnetHelper_L.getModulator()) / 512;
+		int dr = (FB_SIZE/2 * m_ArtnetHelper_R.getModulator()) / 512;
 		if (++m_FrameCounter > m_Interval){
 			m_FrameCounter = 0;
 			for(int i=0; i<FB_SIZE; i++){
 				m_FB[i].nscale8(m_Fade); //slowly dim all LEDs
 			}
 		}
-		switch(m_Mode){ //and light up with full brightness
-			case OUT:
-				barOUT(cl, cr, dl, dr);
-				break;
-			case IN:
-				barIN(cl, cr, dl, dr);
-				break;
+		//first speaker
+		for(int i=0; i<dl; i++){
+			m_FB[i] = m_FB[FB_SIZE/2-i-1] = cl;
 		}
+		//first speaker
+		for(int i=0; i<dr; i++){
+			m_FB[i + FB_SIZE/2] = m_FB[FB_SIZE-i-1] = cr;
+		}
+
 	}
 } barFadeStereoSync;
