@@ -11,6 +11,7 @@ private:
 	uint8_t m_History_L[32] = {0};
 	ArtnetHelper m_ArtnetHelper_L = ArtnetHelper(m_History_L, 32, "L");
 	uint8_t m_Fade = 230;
+	int m_ColorIndexOffset = 0;
 	int m_FrameCounter = 0;
 	int m_Interval = 20; // only dim once every n frames //TODO hacky!
 public:
@@ -27,6 +28,9 @@ public:
 		if(!strcmp(key, "fade")){
 			m_Fade = strtol(value, NULL, 10);
 			return 0;
+		}else if(!strcmp(key, "colorindexoffset")){
+			m_ColorIndexOffset = strtol(value, NULL, 10);
+			return 0;
 		}
 		return 1; //no matching input found
 	}
@@ -36,7 +40,7 @@ public:
 	}
 	void render(long ms){
 		CRGB cl = getColor();
-		CRGB cr = getColorRelative(1);
+		CRGB cr = getColorRelative(m_ColorIndexOffset);
 		int dl = (FB_SIZE/2 * m_ArtnetHelper_L.getModulator()) / 512;
 		int dr = (FB_SIZE/2 * m_ArtnetHelper_R.getModulator()) / 512;
 		if (++m_FrameCounter > m_Interval){
