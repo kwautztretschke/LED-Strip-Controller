@@ -3,7 +3,7 @@
 
 #define Z_DEVICE_NAME "tollerESP"
 #define Z_WS2812B
-#define FB_SIZE 30
+#define FB_SIZE 64
 #define Z_DEFAULT_PROGRAM "solidColor"
 
 #endif // __ZYLOSCONFIG_H__
