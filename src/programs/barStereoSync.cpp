@@ -10,15 +10,27 @@ private:
 	ArtnetHelper m_ArtnetHelper_R = ArtnetHelper(m_History_R, 32, "R");
 	uint8_t m_History_L[32] = {0};
 	ArtnetHelper m_ArtnetHelper_L = ArtnetHelper(m_History_L, 32, "L");
-	uint8_t m_Fade = 230;
+	enum Mode{
+		OUT,
+		IN
+	} m_Mode = IN;
+	uint8_t m_Fade = 128;
 	int m_ColorIndexOffset = 0;
 	int m_FrameCounter = 0;
 	int m_Interval = 20; // only dim once every n frames //TODO hacky!
 public:
 	using Program::Program;
 	int init(){
-		m_Name = "barFadeStereoSync";
+		m_Name = "barStereoSync";
 		return 0;
+	}
+	void activate(){
+		m_ArtnetHelper_R.clearArtNetHistory();
+		m_ArtnetHelper_L.clearArtNetHistory();
+		m_FrameCounter = 0;
+		for (int i=0;i<FB_SIZE;i++){
+			m_FB[i] = CRGB::Black;
+		}
 	}
 	int input(char* key, char* value){
 		if (!Program::input(key, value))
@@ -59,4 +71,4 @@ public:
 		}
 
 	}
-} barFadeStereoSync;
+} barStereoSync;

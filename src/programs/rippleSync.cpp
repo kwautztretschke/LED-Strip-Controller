@@ -22,6 +22,13 @@ public:
 		m_Name = "rippleSync";
 		return 0;
 	}
+	void activate(){
+		m_ArtnetHelper.clearArtNetHistory();
+		m_FrameCounter = 0;
+		for(int i=0; i<FB_SIZE; i++){
+			m_FB[i] = CRGB::Black;
+		}
+	}
 	int input(char* key, char* value){
 		if (!Program::input(key, value))
 			return 0; //input was handled by program (e.g. colorindex)
