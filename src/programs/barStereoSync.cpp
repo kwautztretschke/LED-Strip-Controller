@@ -14,14 +14,23 @@ private:
 		OUT,
 		IN
 	} m_Mode = IN;
-	uint8_t m_Fade = 230;
+	uint8_t m_Fade = 128;
+	int m_ColorIndexOffset = 0;
 	int m_FrameCounter = 0;
 	int m_Interval = 20; // only dim once every n frames //TODO hacky!
 public:
 	using Program::Program;
 	int init(){
-		m_Name = "barFadeStereoSync";
+		m_Name = "barStereoSync";
 		return 0;
+	}
+	void activate(){
+		m_ArtnetHelper_R.clearArtNetHistory();
+		m_ArtnetHelper_L.clearArtNetHistory();
+		m_FrameCounter = 0;
+		for (int i=0;i<FB_SIZE;i++){
+			m_FB[i] = CRGB::Black;
+		}
 	}
 	int input(char* key, char* value){
 		if (!Program::input(key, value))
@@ -35,6 +44,9 @@ public:
 				m_Mode = IN;
 			else
 				return 1; //wrong mode
+			return 0;
+		}else if(!strcmp(key, "colorindexoffset")){
+			m_ColorIndexOffset = strtol(value, NULL, 10);
 			return 0;
 		}else if(!strcmp(key, "fade")){
 			m_Fade = strtol(value, NULL, 10);
@@ -65,7 +77,7 @@ public:
 	
 	void render(long ms){
 		CRGB cl = getColor();
-		CRGB cr = getColorRelative(1);
+		CRGB cr = getColorRelative(m_ColorIndexOffset);
 		int dl = (FB_SIZE * m_ArtnetHelper_L.getModulator()) / 512;
 		int dr = (FB_SIZE * m_ArtnetHelper_R.getModulator()) / 512;
 		if (++m_FrameCounter > m_Interval){
@@ -83,4 +95,4 @@ public:
 				break;
 		}
 	}
-} barFadeStereoSync;
+} barStereoSync;
