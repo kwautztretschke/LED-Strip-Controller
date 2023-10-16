@@ -11,6 +11,9 @@ public:
 		m_Name = "simpleSync";
 		return 0;
 	}
+	void activate(){
+		m_ArtnetHelper.clearArtNetHistory();
+	}
 	int input(char* key, char* value){
 		if (!Program::input(key, value))
 			return 0; //input was handled by program (e.g. colorindex)

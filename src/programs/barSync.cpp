@@ -14,11 +14,21 @@ private:
 		OUT,
 		IN
 	} m_Mode = R2L;
+	uint8_t m_Fade = 128;
+	int m_FrameCounter = 0;
+	int m_Interval = 20; // only dim once every n frames //TODO hacky!
 public:
 	using Program::Program;
 	int init(){
 		m_Name = "barSync";
 		return 0;
+	}
+	void activate(){
+		m_ArtnetHelper.clearArtNetHistory();
+		m_FrameCounter = 0;
+		for (int i=0;i<FB_SIZE;i++){
+			m_FB[i] = CRGB::Black;
+		}
 	}
 	int input(char* key, char* value){
 		if (!Program::input(key, value))
@@ -37,51 +47,59 @@ public:
 			else
 				return 1; //wrong mode
 			return 0;
+		}else if(!strcmp(key, "fade")){
+			m_Fade = strtol(value, NULL, 10);
+			return 0;
 		}
 		return 1; //no matching input found
 	}
 	void artnet(const uint8_t* data, const uint16_t size){
 		m_ArtnetHelper.artnet(data, size);
 	}
-	void barR2L(CRGB c, CRGB b, int d){
-		for(int i=0; i<FB_SIZE; i++){
-			m_FB[i] = i<d?c:b;
+	void barR2L(CRGB c, int d){
+		for(int i=0; i<d; i++){
+			m_FB[i] = c;
 		}
 	}
-	void barL2R(CRGB c, CRGB b, int d){
-		for(int i=0; i<FB_SIZE; i++){
-			m_FB[i] = i>FB_SIZE-d?c:b;
+	void barL2R(CRGB c, int d){
+		for(int i=0; i<d; i++){
+			m_FB[FB_SIZE-1 - i] = c;
 		}
 	}
-	void barOUT(CRGB c, CRGB b, int d){
-		d = (FB_SIZE - d)/2;
-		for(int i=0; i<FB_SIZE/2; i++){
-			m_FB[i] = m_FB[FB_SIZE-i-1] = i<d?b:c;
-		}
-	}
-	void barIN(CRGB c, CRGB b, int d){
+	void barOUT(CRGB c, int d){
 		d/=2;
-		for(int i=0; i<FB_SIZE/2; i++){
-			m_FB[i] = m_FB[FB_SIZE-i-1] = i<d?c:b;
+		for(int i=0; i<d; i++){
+			m_FB[FB_SIZE/2 - i] = m_FB[FB_SIZE/2 + i-1] = c;
+		}
+	}
+	void barIN(CRGB c, int d){
+		d/=2;
+		for(int i=0; i<d; i++){
+			m_FB[i] = m_FB[FB_SIZE-i-1] = c;
 		}
 	}
 	
 	void render(long ms){
 		CRGB color = getColor();
-		CRGB background = getColorRelative(1);
 		int distance = (FB_SIZE * m_ArtnetHelper.getModulator()) / 255;
-		switch(m_Mode){
+		if (++m_FrameCounter > m_Interval){
+			m_FrameCounter = 0;
+			for(int i=0; i<FB_SIZE; i++){
+				m_FB[i].nscale8(m_Fade); //slowly dim all LEDs
+			}
+		}
+		switch(m_Mode){ //and light up with full brightness
 			case R2L:
-				barR2L(color, background, distance);
+				barR2L(color, distance);
 				break;
 			case L2R:
-				barL2R(color, background, distance);
+				barL2R(color, distance);
 				break;
 			case OUT:
-				barOUT(color, background, distance);
+				barOUT(color, distance);
 				break;
 			case IN:
-				barIN(color, background, distance);
+				barIN(color, distance);
 				break;
 		}
 	}
